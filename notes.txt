@@ -1,0 +1,67 @@
+1.added compile('org.springframework.boot:spring-boot-starter-data-mongodb') in dependencies in gradle
+we took out spring data-jpa and went to mongoDB
+
+----------------------------\
+circleci configuration
+2.skipping cricleci test
+
+----------------------------/
+
+Code Coverage Configuration for CodeCov.io
+
+----------------------------\
+
+Embedded MongoDB Configuration
+
+compile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
+compile group: 'cz.jirutka.spring', name: 'embedmongo-spring', version: '1.3.1'
+
+added this in build.gradle
+
+spring.data.mongodb.port=0
+spring.data.mongodb.host=localhost
+
+added this to application.properties
+
+----------------------------/
+
+Refactoring Data Model for MongoDB
+
+applied @Document, @Id and @dbref in domain.
+remove all bidirectional connections recipe = this.ingredient , ingredient = this.recipe which we did between Recipe and Ingredient etc
+
+Also in mongoDB emmbeding of documents occur b/w documents in a collection
+Also in MongoDB dbref is used to establish relationships between documents of different collections.
+
+we found that @Document create a collection when Document(collection = '') is not specified in mongoDB so 3 collections are created which contain 1 document
+so what dbref does is thatIn Spring Data MongoDB, DBRef (Database Reference) is a feature that allows you to create references between documents in different collections within a MongoDB database. It's a way to establish relationships between documents similar to how foreign keys work in relational databases. This feature enables you to model relationships between entities in a more flexible manner.
+
+dbref basically establish relationship if putted on one entity the uni-directional relationship is created if putted on both entities the bi-directional relationship is created.
+robo3t to access mongodb
+
+----------------------------\
+
+Resolving bugs
+
+1.
+bug in recipeForm.html
+after updating recipe ingredients are not shown
+mongo dosent do the merge quite the same way jpa does so when we were doing post mongo was giving empty list it wasnt doing merge
+
+what is actually causing the bug is that the in jpa if we dont pass any ingredient then the ingredients which are added is taken in from the command object
+but in mongo this does not work as we have to properly specify the binding with th:field to the command object
+
+needed to convert the Ingredientcommand and category command from set to list in recipie command bcz spring mvc does not bind to set but it will bind to list
+
+2. code review need to be done
+error while clicking the view,update,delete button on ingredient page
+
+created a uuid value in ingredient domain
+as ingredient is now a list property spring and mongo will not give it id by @ID
+
+to to resolve this error we
+
+https://github.com/springframeworkguru/spring5-mongo-recipe-app/pull/9/commits/1a610a9417da0c63f25038d57fe1b3dbfa2985d7
+---------------------------/
+
+
